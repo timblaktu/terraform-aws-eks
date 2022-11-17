@@ -61,7 +61,7 @@ locals {
   # This can be fixed with "splat" syntax, which is lenient to empty lists:
   #   https://developer.hashicorp.com/terraform/language/expressions/splat#single-values-as-lists
   # node_security_group_id = local.create_node_sg ? aws_security_group.node[0].id : var.node_security_group_id
-  node_security_group_id = local.create_node_sg ? coalescelist(aws_security_group.node[*].id, [""]) : var.node_security_group_id
+  node_security_group_id = local.create_node_sg ? coalescelist(aws_security_group.node[*].id, [""])[0] : var.node_security_group_id
 
   node_security_group_rules = {
     egress_cluster_443 = {
@@ -176,7 +176,7 @@ resource "aws_security_group_rule" "node" {
   for_each = { for k, v in merge(local.node_security_group_rules, var.node_security_group_additional_rules) : k => v if local.create_node_sg }
 
   # Required
-  security_group_id = coalescelist(aws_security_group.node[*].id, [""])  # aws_security_group.node[0].id
+  security_group_id = coalescelist(aws_security_group.node[*].id, [""])[0]  # aws_security_group.node[0].id
   protocol          = each.value.protocol
   from_port         = each.value.from_port
   to_port           = each.value.to_port
